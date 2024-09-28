@@ -94,6 +94,8 @@ class Darti {
         executeAll(node.variables.variables);
       case VariableDeclaration():
         bindings[node.name.lexeme] = node.initializer?.let(evaluate);
+      case TopLevelVariableDeclaration():
+        executeAll(node.variables.variables);
       case IfStatement():
         if (evaluateAsBool(node.expression)) {
           execute(node.thenStatement);
@@ -185,6 +187,9 @@ class Darti {
             //       throw UnsupportedError('String has no method mapping for $name');
             //   }
             // }
+            if (target == int && name.name == 'parse') {
+              return int.parse(arguments.single as String);
+            }
             return reflect(target).invoke(Symbol(name.name), arguments).reflectee;
           }
           throw TypeError(); // coverage:ignore-line
@@ -227,6 +232,9 @@ class Darti {
           case '/':
             if (left is num && right is num) return left / right;
             throw TypeError(); // coverage:ignore-line
+          case '~/':
+            if (left is num && right is num) return left ~/ right;
+            throw TypeError(); // coverage:ignore-line
           case '%':
             if (left is num && right is num) return left % right;
             throw TypeError(); // coverage:ignore-line
@@ -242,6 +250,9 @@ class Darti {
             return left as dynamic > right;
           case '>=':
             return left as dynamic >= right;
+          case '&&':
+            // XXX right must be be evaluated if left is false
+            return left as bool && right as bool;
           default:
             throw UnimplementedError('$node'); // coverage:ignore-line
         }
@@ -321,6 +332,8 @@ class Darti {
             throw UnimplementedError('$node'); // coverage:ignore-line
         }
         return update(name.name, value);
+      case ParenthesizedExpression():
+        return evaluate(node.expression);
       default:
         throw UnimplementedError('${node.runtimeType}: $node'); // coverage:ignore-line
     }

@@ -20,3 +20,5 @@ To access methods and properties of built-in types, `mirrors` are used which mak
 Run `dart run` to run `bin/darti.dart` which demonstrates the factorial function.
 
 Run `dart test` to run all tests. Alternatively, you can run `make` to run tests with code coverage. I recommend the [coverage-gutters](https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters) extension for Visual Studio Code to show which lines are covered by tests and aren't yet.
+
+Run `dart run :hammudarti` for a non trivial example of a [old game](https://archive.org/details/Basic_Computer_Games_Microcomputer_Edition_1978_Creative_Computing/page/n92/mode/1up) running via Darti.
