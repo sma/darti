@@ -103,7 +103,7 @@ class Darti {
       case ExpressionFunctionBody():
         throw _Return(evaluate(node.expression));
       case Block():
-        executeAll(node.statements);
+        Darti(this, {}).executeAll(node.statements);
       case ExpressionStatement():
         evaluate(node.expression);
       case ReturnStatement():
@@ -144,29 +144,31 @@ class Darti {
       case ForStatement():
         execute(node.forLoopParts);
       case ForPartsWithDeclarations():
-        // XXX this should be in child context
-        executeAll(node.variables.variables);
-        while (node.condition?.let(evaluateAsBool) ?? true) {
-          try {
-            execute((node.parent as ForStatement).body);
-          } on _Break {
-            break;
-          } on _Continue {
-            // continue below
-          }
-          for (final updater in node.updaters) {
-            evaluate(updater);
-          }
-        }
+        Darti(this, {})._executeForParts(node);
+      case ForPartsWithExpression():
+        Darti(this, {})._executeForParts(node);
       case ForEachPartsWithDeclaration():
-        // XXX this should be in child context
         final name = node.loopVariable.name.lexeme;
+        final body = (node.parent as ForStatement).body;
         final iterable = evaluate(node.iterable);
         if (iterable is! Iterable) throw TypeError();
         for (final value in iterable) {
-          bindings[name] = value;
           try {
-            execute((node.parent as ForStatement).body);
+            Darti(this, {name: value}).execute(body);
+          } on _Break {
+            break;
+          } on _Continue {
+            continue;
+          }
+        }
+      case ForEachPartsWithIdentifier():
+        final body = (node.parent as ForStatement).body;
+        final iterable = evaluate(node.iterable);
+        if (iterable is! Iterable) throw TypeError();
+        for (final value in iterable) {
+          try {
+            assign(node.identifier, value);
+            execute(body);
           } on _Break {
             break;
           } on _Continue {
@@ -196,6 +198,32 @@ class Darti {
         }
       default:
         throw UnimplementedError('${node.runtimeType}: $node'); // coverage:ignore-line
+    }
+  }
+
+  /// This is called by [execute] on a new context so that the variables
+  /// declared by executing this [node] are local to the `for` loop.
+  void _executeForParts(ForParts node) {
+    switch (node) {
+      case ForPartsWithDeclarations():
+        executeAll(node.variables.variables);
+      case ForPartsWithExpression():
+        node.initialization?.let(evaluate);
+      case ForPartsWithPattern():
+        throw UnimplementedError('$node');
+    }
+    final body = (node.parent as ForStatement).body;
+    while (node.condition?.let(evaluateAsBool) ?? true) {
+      try {
+        execute(body);
+      } on _Break {
+        break;
+      } on _Continue {
+        // continue below
+      }
+      for (final updater in node.updaters) {
+        evaluate(updater);
+      }
     }
   }
 

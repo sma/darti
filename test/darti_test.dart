@@ -207,6 +207,9 @@ void main() {
       expect(run('main() { int a = 42; print(a); }'), '42\n');
       expect(run('main() { const a = 42; print(a); }'), '42\n');
     });
+    test('local variable declaration', () {
+      expect(run('main() { var a = 42; { var a = 23; print(a); } print(a); }'), '23\n42\n');
+    });
     group('assignment', () {
       test('=', () {
         expect(run('main() { var a = 1; a = a + 2; print(a); }'), '3\n');
@@ -259,12 +262,16 @@ void main() {
       expect(run('main() { for (var i = 0; i < 3; i++) print(i); }'), '0\n1\n2\n');
       expect(run('main() { for (var i = 0; i < 3; i++) { if(i == 2) break; print(i); } }'), '0\n1\n');
       expect(run('main() { for (var i = 0; i < 3; i++) { if(i == 1) continue; print(i); } }'), '0\n2\n');
+      expect(run('main() { var i = 1; for (i = 0; i < 3; i++) {} print(i); }'), '3\n');
+      expect(run('main() { var i = 1; for (var i = 0; i < 3; i++) {} print(i); }'), '1\n');
     });
     test('for/each', () {
       expect(run('main() { for (final a in []) print(a); }'), '');
       expect(run('main() { for (final a in [3, 4, 2]) print(a); }'), '3\n4\n2\n');
       expect(run('main() { for (final a in [3, 4, 2]) { if (a == 2) break; print(a); } }'), '3\n4\n');
       expect(run('main() { for (final a in [3, 4, 2]) { if (a == 4) continue; print(a); } }'), '3\n2\n');
+      expect(run('main() { var a = 1; for (a in [3, 4, 2]) {} print(a); }'), '2\n');
+      // expect(run('main() { var a = 1; for (var a in [3, 4, 2]) {} print(a); }'), '1\n');
     });
     test('try/catch', () {
       expect(run('main() { try { print("B"); 1~/0; print("E"); } catch (e) { print("C"); } }'), 'B\nC\n');
