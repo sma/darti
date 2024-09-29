@@ -6,7 +6,6 @@ import 'package:darti/darti.dart';
 void main() {
   Darti.global.bindings
     ..['Random'] = DartiFunction((_) => Random())
-    ..['stdin'] = stdin
-    ..['int'] = int;
+    ..['stdin'] = stdin;
   Darti.main(File('example/hammurabi.dart').readAsStringSync());
 }

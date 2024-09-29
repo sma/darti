@@ -96,6 +96,8 @@ class Darti {
     switch (node) {
       case CompilationUnit():
         executeAll(node.declarations);
+      case EmptyFunctionBody():
+        break;
       case FunctionDeclaration():
         bindings[node.name.lexeme] = DartiFunction.from(node.functionExpression, this);
       case BlockFunctionBody():
@@ -245,7 +247,7 @@ class Darti {
         if (node.realTarget case final targetExpr?) {
           final target = evaluate(targetExpr);
           if (node.function case SimpleIdentifier name) {
-            final arguments = [...node.argumentList.arguments.map(evaluate)];
+            final arguments = evaluateArgumentList(node.argumentList);
             // if (target is String) {
             //   switch (name.name) {
             //     case 'substring':
@@ -267,7 +269,7 @@ class Darti {
           throw TypeError(); // coverage:ignore-line
         }
         final function = evaluate(node.function);
-        final arguments = [...node.argumentList.arguments.map(evaluate)];
+        final arguments = evaluateArgumentList(node.argumentList);
         if (function is DartiFunction) return function(arguments);
         throw TypeError(); // coverage:ignore-line
       case PropertyAccess():
@@ -425,12 +427,17 @@ class Darti {
         return DartiFunction.from(node, this);
       case FunctionExpressionInvocation():
         final function = evaluate(node.function);
-        final arguments = [...node.argumentList.arguments.map(evaluate)];
+        final arguments = evaluateArgumentList(node.argumentList);
         if (function is! DartiFunction) throw TypeError();
         return function(arguments);
       default:
         throw UnimplementedError('${node.runtimeType}: $node'); // coverage:ignore-line
     }
+  }
+
+  /// Evaluates all [arguments] into a list of values.
+  List<Object?> evaluateArgumentList(ArgumentList arguments) {
+    return [...arguments.arguments.map(evaluate)];
   }
 
   /// Evalutes [element] and append it to [list].
@@ -471,8 +478,13 @@ class Darti {
     switch (node) {
       case SimpleIdentifier():
         return update(node.name, value);
+      case PrefixedIdentifier():
+        final target = evaluate(node.prefix);
+        final name = node.identifier.name;
+        reflect(target).setField(Symbol(name), value);
+        return value;
       default:
-        throw UnimplementedError('$node'); // coverage:ignore-line
+        throw UnimplementedError('${node.runtimeType}: $node'); // coverage:ignore-line
     }
   }
 

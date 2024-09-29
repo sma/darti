@@ -26,6 +26,10 @@ Run `dart run :hammudarti` for a non trivial example of a [old game](https://arc
 ## Subset Supported
 Below is a list of all concrete `AstNode`s of Dart 3.5 with the exception of augmentation that are created by the Dart parser.
 
+### Declarations
+* [X] `CompilationUnit`
+* ...
+
 ### Statements
 * [ ] `AssertStatement`
 * [X] `Block` - creates a new context
