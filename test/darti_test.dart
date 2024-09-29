@@ -201,11 +201,21 @@ void main() {
         expect(run('main() { var a = 3; a %= 2; print(a); }'), '1\n');
       });
     });
+    group('prefix', () {
+      test('++', () {
+        expect(run('main() { var a = 1; print(++a); print(a); }'), '2\n2\n');
+      });
+      test('--', () {
+        expect(run('main() { var a = 1; print(--a); print(a); }'), '0\n0\n');
+      });
+    });
+    group('postfix', () {
     test('++', () {
       expect(run('main() { var a = 1; print(a++); print(a); }'), '1\n2\n');
     });
     test('--', () {
       expect(run('main() { var a = 1; print(a--); print(a); }'), '1\n0\n');
+    });
     });
     test('if', () {
       expect(run('main() { if (true) print("T"); }'), 'T\n');
