@@ -55,11 +55,11 @@ int getIntInput(String prompt) {
     print(prompt);
     String? input = stdin.readLineSync();
     if (input != null) {
-      // try {
-      return int.parse(input);
-      // } catch (e) {
-      //   print('Please enter a valid number.');
-      // }
+      try {
+        return int.parse(input);
+      } catch (e) {
+        print('Please enter a valid number.');
+      }
     }
   }
 }

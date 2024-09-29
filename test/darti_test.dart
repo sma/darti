@@ -266,6 +266,11 @@ void main() {
       expect(run('main() { for (final a in [3, 4, 2]) { if (a == 2) break; print(a); } }'), '3\n4\n');
       expect(run('main() { for (final a in [3, 4, 2]) { if (a == 4) continue; print(a); } }'), '3\n2\n');
     });
+    test('try/catch', () {
+      expect(run('main() { try { print("B"); 1~/0; print("E"); } catch (e) { print("C"); } }'), 'B\nC\n');
+      expect(run('main() { try { print("B"); 1~/1; print("E"); } catch (e) { print("C"); } }'), 'B\nE\n');
+      expect(run('main() { for (var i in [1, 2]) { try { break; } catch (e, st) { print("X"); } } }'), '');
+    });
   });
 
   group('exceptions', () {

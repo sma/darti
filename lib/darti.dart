@@ -177,6 +177,23 @@ class Darti {
         throw const _Break();
       case ContinueStatement():
         throw const _Continue();
+      case TryStatement():
+        try {
+          execute(node.body);
+        } on _ControlFlow {
+          rethrow;
+        } catch (exception) {
+          for (final catchClause in node.catchClauses) {
+            if (catchClause.exceptionType != null) throw UnsupportedError('on ${catchClause.exceptionType}');
+            var context = this;
+            if (catchClause.exceptionParameter?.name.lexeme case final name?) {
+              context = Darti(context, {name: exception});
+            }
+            context.execute(catchClause.body);
+          }
+        } finally {
+          node.finallyBlock?.let(execute);
+        }
       default:
         throw UnimplementedError('${node.runtimeType}: $node'); // coverage:ignore-line
     }
@@ -451,18 +468,20 @@ class Darti {
   }
 }
 
+abstract class _ControlFlow implements Exception {}
+
 /// Signals a `break` within a loop.
-class _Break implements Exception {
+class _Break implements _ControlFlow {
   const _Break();
 }
 
 /// Signals a `continue` within a loop.
-class _Continue implements Exception {
+class _Continue implements _ControlFlow {
   const _Continue();
 }
 
 /// Signals a `return` within a function.
-class _Return implements Exception {
+class _Return implements _ControlFlow {
   _Return(this.value);
 
   final Object? value;
