@@ -325,13 +325,13 @@ class Darti {
       case ListLiteral():
         final list = <dynamic>[];
         for (final element in node.elements) {
-          _evaluateCollectionElement(list, element);
+          _evaluateCollectionElement(element, list);
         }
         return list;
       case SetOrMapLiteral():
         final list = <dynamic>[];
         for (final element in node.elements) {
-          _evaluateCollectionElement(list, element);
+          _evaluateCollectionElement(element, list);
         }
         if (list.isEmpty) return {};
         if (list.first is MapEntry<dynamic, dynamic>) {
@@ -361,6 +361,7 @@ class Darti {
   }
 
   /// Evalutes [element] and append it to [list].
+  void _evaluateCollectionElement(CollectionElement element, List<dynamic> list) {
     switch (element) {
       case Expression():
         list.add(evaluate(element));
@@ -368,9 +369,9 @@ class Darti {
         throw UnimplementedError();
       case IfElement():
         if (evaluateAsBool(element.expression)) {
-          _evaluateCollectionElement(list, element.thenElement);
+          _evaluateCollectionElement(element.thenElement, list);
         } else if (element.elseElement case final elseElement?) {
-          _evaluateCollectionElement(list, elseElement);
+          _evaluateCollectionElement(elseElement, list);
         }
       case MapLiteralEntry():
         list.add(MapEntry<dynamic, dynamic>(evaluate(element.key), evaluate(element.value)));
@@ -388,6 +389,10 @@ class Darti {
         }
     }
   }
+
+  /// Returns the result of evaluating [node] which must be a Boolean value.
+  bool evaluateAsBool(Expression node) => evaluate(node) as bool;
+
 
   /// Runs [source], throwing an [ArgumentError] on compilation errors.
   /// Might also throw other exceptions or errors because of the execution.
