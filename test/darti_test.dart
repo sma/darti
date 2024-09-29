@@ -177,6 +177,23 @@ void main() {
     test('variable ref', () {
       expect(eval('main'), "Instance of 'DartiFunction'");
     });
+
+    group('logical', () {
+      test('!', () {
+        expect(eval('!true'), 'false');
+        expect(eval('!false'), 'true');
+      });
+      test('&&', () {
+        expect(eval('false && false'), 'false');
+        expect(eval('true && false'), 'false');
+        expect(eval('true && true'), 'true');
+      });
+      test('||', () {
+        expect(eval('false || false'), 'false');
+        expect(eval('true || false'), 'true');
+        expect(eval('true || true'), 'true');
+      });
+    });
   });
 
   group('statements', () {

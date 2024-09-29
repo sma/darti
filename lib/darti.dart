@@ -238,56 +238,64 @@ class Darti {
       case SimpleIdentifier():
         return lookup(node.name);
       case BinaryExpression():
+        final operator = node.operator.lexeme;
         final left = evaluate(node.leftOperand);
-        final right = evaluate(node.rightOperand);
-        switch (node.operator.lexeme) {
-          case '+':
-            if (left is num && right is num) return left + right;
-            if (left is String && right is String) return left + right;
-            throw TypeError(); // coverage:ignore-line
-          case '-':
-            if (left is num && right is num) return left - right;
-            throw TypeError(); // coverage:ignore-line
-          case '*':
-            if (left is num && right is num) return left * right;
-            if (left is String && right is int) return left * right;
-            throw TypeError(); // coverage:ignore-line
-          case '/':
-            if (left is num && right is num) return left / right;
-            throw TypeError(); // coverage:ignore-line
-          case '~/':
-            if (left is num && right is num) return left ~/ right;
-            throw TypeError(); // coverage:ignore-line
-          case '%':
-            if (left is num && right is num) return left % right;
-            throw TypeError(); // coverage:ignore-line
-          case '==':
-            return left == right;
-          case '!=':
-            return left != right;
-          case '<':
-            return left as dynamic < right;
-          case '<=':
-            return left as dynamic <= right;
-          case '>':
-            return left as dynamic > right;
-          case '>=':
-            return left as dynamic >= right;
+        switch (operator) {
           case '&&':
-            // XXX right must be be evaluated if left is false
-            return left as bool && right as bool;
+            return left as bool && evaluate(node.rightOperand) as bool;
+          case '||':
+            return left as bool || evaluate(node.rightOperand) as bool;
           default:
-            throw UnimplementedError('$node'); // coverage:ignore-line
+            final right = evaluate(node.rightOperand);
+            switch (operator) {
+              case '+':
+                if (left is num && right is num) return left + right;
+                if (left is String && right is String) return left + right;
+                throw TypeError(); // coverage:ignore-line
+              case '-':
+                if (left is num && right is num) return left - right;
+                throw TypeError(); // coverage:ignore-line
+              case '*':
+                if (left is num && right is num) return left * right;
+                if (left is String && right is int) return left * right;
+                throw TypeError(); // coverage:ignore-line
+              case '/':
+                if (left is num && right is num) return left / right;
+                throw TypeError(); // coverage:ignore-line
+              case '~/':
+                if (left is num && right is num) return left ~/ right;
+                throw TypeError(); // coverage:ignore-line
+              case '%':
+                if (left is num && right is num) return left % right;
+                throw TypeError(); // coverage:ignore-line
+              case '==':
+                return left == right;
+              case '!=':
+                return left != right;
+              case '<':
+                return left as dynamic < right;
+              case '<=':
+                return left as dynamic <= right;
+              case '>':
+                return left as dynamic > right;
+              case '>=':
+                return left as dynamic >= right;
+              default:
+                throw UnimplementedError('$node'); // coverage:ignore-line
+            }
         }
+
       case PrefixExpression():
-        final value = evaluate(node.operand) as num;
+        final value = evaluate(node.operand);
         switch (node.operator.lexeme) {
           case '-':
-            return -value;
+            return -(value as num);
           case '++':
-            return assign(node.operand, value + 1);
+            return assign(node.operand, (value as num) + 1);
           case '--':
-            return assign(node.operand, value - 1);
+            return assign(node.operand, (value as num) - 1);
+          case '!':
+            return !(value as bool);
           default:
             throw UnimplementedError('$node'); // coverage:ignore-line
         }
