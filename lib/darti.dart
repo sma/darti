@@ -6,19 +6,21 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:darti/let.dart';
 import 'package:pub_semver/pub_semver.dart';
 
+/// Represents a built-in or user-defined function.
 class DartiFunction {
   DartiFunction(this.function);
 
   DartiFunction.from(FunctionExpression expr, Darti context)
       : function = ((arguments) {
-          // assuming everything are required positional parameters
-          final parameters = [...?expr.parameters?.parameters.map((p) => p.name!.lexeme)];
+          // assuming all parameters are required and positional
+          final parameterExprs = expr.parameters?.parameters;
+          if (parameterExprs?.any((p) => p.isNamed || p.isOptional) ?? false) throw TypeError();
+          final parameters = [...?parameterExprs?.map((p) => p.name!.lexeme)];
           // sanity check, assuming all types are matching
           if (parameters.length != arguments.length) throw TypeError();
           try {
             Darti(context, {
-              for (final (index, parameter) in parameters.indexed) //
-                parameter: arguments[index],
+              for (final (index, parameter) in parameters.indexed) parameter: arguments[index],
             }).execute(expr.body);
             return null; // void function
           } on _Return catch (r) {
@@ -49,9 +51,14 @@ class DartiFunction {
 class Darti {
   Darti(this.parent, this.bindings);
 
+  /// The parent context, used to [lookup] bindings.
   final Darti? parent;
+
+  /// The values bound to names in this context.
   final Map<String, Object?> bindings;
 
+  /// Returns the value bound to [name].
+  /// Throws an error if unbound.
   Object? lookup(String name) {
     if (bindings.containsKey(name)) {
       return bindings[name];
@@ -59,6 +66,9 @@ class Darti {
     return (parent ?? (throw 'unbound identifier $name')).lookup(name);
   }
 
+  /// Updates the binding of [name] to [value] and returns it.
+  /// To create a new binding, directly assign to [bindings] instead.
+  /// Throws an error if unbound.
   T update<T>(String name, T value) {
     if (bindings.containsKey(name)) {
       return bindings[name] = value;
@@ -73,6 +83,7 @@ class Darti {
     }),
   });
 
+  /// Executes [node].
   void execute(AstNode node) {
     switch (node) {
       case CompilationUnit():
@@ -155,14 +166,15 @@ class Darti {
           }
         }
       case BreakStatement():
-        throw _Break();
+        throw const _Break();
       case ContinueStatement():
-        throw _Continue();
+        throw const _Continue();
       default:
         throw UnimplementedError('${node.runtimeType}: $node'); // coverage:ignore-line
     }
   }
 
+  /// Executes every node in [nodes].
   void executeAll(NodeList<AstNode> nodes) {
     for (final node in nodes) {
       execute(node);
@@ -339,10 +351,7 @@ class Darti {
     }
   }
 
-  /// Returns the result of evaluating [node] which must be a Boolean value.
-  bool evaluateAsBool(Expression node) => evaluate(node) as bool;
-
-  void _evaluateCollectionElement(List<dynamic> list, CollectionElement element) {
+  /// Evalutes [element] and append it to [list].
     switch (element) {
       case Expression():
         list.add(evaluate(element));
@@ -395,10 +404,17 @@ class Darti {
   }
 }
 
-class _Break implements Exception {}
+/// Signals a `break` within a loop.
+class _Break implements Exception {
+  const _Break();
+}
 
-class _Continue implements Exception {}
+/// Signals a `continue` within a loop.
+class _Continue implements Exception {
+  const _Continue();
+}
 
+/// Signals a `return` within a function.
 class _Return implements Exception {
   _Return(this.value);
 
