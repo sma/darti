@@ -33,14 +33,14 @@ class DartiFunction {
   Object? call(List<Object?> arguments) => function(arguments);
 }
 
-// class DartiException implements Exception {
-//   DartiException(this.message);
+class DartiException implements Exception {
+  DartiException(this.message);
 
-//   final String message;
+  final String message;
 
-//   @override
-//   String toString() => message;
-// }
+  @override
+  String toString() => message;
+}
 
 /// Interprets Dart code.
 ///
@@ -63,7 +63,7 @@ class Darti {
     if (bindings.containsKey(name)) {
       return bindings[name];
     }
-    return (parent ?? (throw 'unbound identifier $name')).lookup(name);
+    return (parent ?? (throw DartiException('unbound identifier $name'))).lookup(name);
   }
 
   /// Updates the binding of [name] to [value] and returns it.
@@ -73,12 +73,18 @@ class Darti {
     if (bindings.containsKey(name)) {
       return bindings[name] = value;
     }
-    return (parent ?? (throw 'unbound identifier $name')).update(name, value);
+    return (parent ?? (throw DartiException('unbound identifier $name'))).update(name, value);
+  }
+
+  static void checkArguments(int count, List<Object?> args) {
+    if (args.length != count) {
+      throw DartiException('expected ${count == 1 ? '1 argument' : '$count arguments'} but got ${args.length}');
+    }
   }
 
   static final global = Darti(null, {
     'print': DartiFunction((args) {
-      if (args.length != 1) throw TypeError();
+      checkArguments(1, args);
       return print(args.single);
     }),
   });
