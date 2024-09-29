@@ -205,8 +205,11 @@ class Darti {
             //       throw UnsupportedError('String has no method mapping for $name');
             //   }
             // }
-            if (target == int && name.name == 'parse') {
-              return int.parse(arguments.single as String);
+            // if (target == int && name.name == 'parse') {
+            //   return int.parse(arguments.single as String);
+            // }
+            if (target is Type) {
+              return reflectClass(target).invoke(Symbol(name.name), arguments).reflectee;
             }
             return reflect(target).invoke(Symbol(name.name), arguments).reflectee;
           }
