@@ -291,14 +291,14 @@ class Darti {
         }
       case PostfixExpression():
         final value = evaluate(node.operand) as num;
-          switch (node.operator.lexeme) {
-            case '++':
+        switch (node.operator.lexeme) {
+          case '++':
             assign(node.operand, value + 1);
-            case '--':
+          case '--':
             assign(node.operand, value - 1);
-            default:
-              throw UnimplementedError('$node'); // coverage:ignore-line
-          }
+          default:
+            throw UnimplementedError('$node'); // coverage:ignore-line
+        }
         return value;
       case NullLiteral():
         return null;
@@ -362,6 +362,13 @@ class Darti {
         return assign(node.leftHandSide, value);
       case ParenthesizedExpression():
         return evaluate(node.expression);
+      case FunctionExpression():
+        return DartiFunction.from(node, this);
+      case FunctionExpressionInvocation():
+        final function = evaluate(node.function);
+        final arguments = [...node.argumentList.arguments.map(evaluate)];
+        if (function is! DartiFunction) throw TypeError();
+        return function(arguments);
       default:
         throw UnimplementedError('${node.runtimeType}: $node'); // coverage:ignore-line
     }

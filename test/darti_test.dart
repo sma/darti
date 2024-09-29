@@ -190,11 +190,11 @@ void main() {
     });
     group('assignment', () {
       test('=', () {
-      expect(run('main() { var a = 1; a = a + 2; print(a); }'), '3\n');
+        expect(run('main() { var a = 1; a = a + 2; print(a); }'), '3\n');
       });
       test('compound', () {
-      expect(run('main() { var a = 1; a += 2; print(a); }'), '3\n');
-      expect(run('main() { var a = 1; a -= 2; print(a); }'), '-1\n');
+        expect(run('main() { var a = 1; a += 2; print(a); }'), '3\n');
+        expect(run('main() { var a = 1; a -= 2; print(a); }'), '-1\n');
         expect(run('main() { var a = 2; a *= 2; print(a); }'), '4\n');
         expect(run('main() { var a = 3; a /= 2; print(a); }'), '1.5\n');
         expect(run('main() { var a = 3; a ~/= 2; print(a); }'), '1\n');
@@ -210,12 +210,12 @@ void main() {
       });
     });
     group('postfix', () {
-    test('++', () {
-      expect(run('main() { var a = 1; print(a++); print(a); }'), '1\n2\n');
-    });
-    test('--', () {
-      expect(run('main() { var a = 1; print(a--); print(a); }'), '1\n0\n');
-    });
+      test('++', () {
+        expect(run('main() { var a = 1; print(a++); print(a); }'), '1\n2\n');
+      });
+      test('--', () {
+        expect(run('main() { var a = 1; print(a--); print(a); }'), '1\n0\n');
+      });
     });
     test('if', () {
       expect(run('main() { if (true) print("T"); }'), 'T\n');
@@ -267,5 +267,11 @@ void main() {
       expect(run('main() { print("abc".length); }'), '3\n');
       expect(run('main() { print("abc".substring(1)); }'), 'bc\n');
     });
+  });
+
+  test('function', () {
+    expect(eval('(){}'), "Instance of 'DartiFunction'");
+    expect(eval('(a){ return a + 1; }(2)'), '3');
+    expect(eval('((a) => a - 1)(2)'), '1');
   });
 }
