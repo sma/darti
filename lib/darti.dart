@@ -83,6 +83,8 @@ class Darti {
   }
 
   static final global = Darti(null, {
+    'int': int,
+    'double': double,
     'print': DartiFunction((args) {
       checkArguments(1, args);
       return print(args.single);

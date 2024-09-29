@@ -30,6 +30,8 @@ String eval(String source) {
 }
 
 void main() {
+  final throwsDartiException = throwsA(isA<DartiException>());
+
   group('base', () {
     test('empty main', () {
       expect(run('main() {}'), '');
@@ -249,6 +251,19 @@ void main() {
     });
   });
 
+  group('exceptions', () {
+    test('unbound variable reference', () {
+      expect(() => eval('foo'), throwsDartiException);
+    });
+    test('assignment to unbound variable', () {
+      expect(() => eval('foo = 1'), throwsDartiException);
+    });
+    test('print with wrong number of arguments', () {
+      expect(() => eval('print()'), throwsDartiException);
+      expect(() => eval('print(1, 2)'), throwsDartiException);
+    });
+  });
+
   group('examples', () {
     test('factorial', () {
       expect(run('''
@@ -266,6 +281,10 @@ void main() {
       expect(run('main() { print("".isEmpty); }'), 'true\n');
       expect(run('main() { print("abc".length); }'), '3\n');
       expect(run('main() { print("abc".substring(1)); }'), 'bc\n');
+    });
+    test('parse numbers', () {
+      expect(run('main() { print(int.parse("13")); }'), '13\n');
+      expect(run('main() { print(double.parse("13")); }'), '13.0\n');
     });
   });
 
