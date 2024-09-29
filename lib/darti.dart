@@ -278,26 +278,27 @@ class Darti {
             throw UnimplementedError('$node'); // coverage:ignore-line
         }
       case PrefixExpression():
+        final value = evaluate(node.operand) as num;
         switch (node.operator.lexeme) {
           case '-':
-            return -(evaluate(node.operand) as num);
+            return -value;
+          case '++':
+            return assign(node.operand, value + 1);
+          case '--':
+            return assign(node.operand, value - 1);
           default:
             throw UnimplementedError('$node'); // coverage:ignore-line
         }
       case PostfixExpression():
-        final value = evaluate(node.operand);
-        if (node.operand case SimpleIdentifier operand) {
+        final value = evaluate(node.operand) as num;
           switch (node.operator.lexeme) {
             case '++':
-              update(operand.name, (value as num) + 1);
+            assign(node.operand, value + 1);
             case '--':
-              update(operand.name, (value as num) - 1);
+            assign(node.operand, value - 1);
             default:
               throw UnimplementedError('$node'); // coverage:ignore-line
           }
-        } else {
-          throw UnimplementedError('$node is not a simple identifier'); // coverage:ignore-line
-        }
         return value;
       case NullLiteral():
         return null;
@@ -339,20 +340,18 @@ class Darti {
         }
         return list.toSet();
       case AssignmentExpression():
-        // XXX needs to deal with complex LHS
-        final name = node.leftHandSide as SimpleIdentifier;
         var value = evaluate(node.rightHandSide);
         switch (node.operator.lexeme) {
           case '=':
             break;
           case '+=':
-            value = (bindings[name.name] as num) + (value as num);
+            value = (evaluate(node.leftHandSide) as num) + (value as num);
           case '-=':
-            value = (bindings[name.name] as num) - (value as num);
+            value = (evaluate(node.leftHandSide) as num) - (value as num);
           default:
             throw UnimplementedError('$node'); // coverage:ignore-line
         }
-        return update(name.name, value);
+        return assign(node.leftHandSide, value);
       case ParenthesizedExpression():
         return evaluate(node.expression);
       default:
@@ -393,6 +392,15 @@ class Darti {
   /// Returns the result of evaluating [node] which must be a Boolean value.
   bool evaluateAsBool(Expression node) => evaluate(node) as bool;
 
+  /// Assigns [value] to [node], returning the assigned value.
+  Object? assign(Expression node, Object? value) {
+    switch (node) {
+      case SimpleIdentifier():
+        return update(node.name, value);
+      default:
+        throw UnimplementedError('$node'); // coverage:ignore-line
+    }
+  }
 
   /// Runs [source], throwing an [ArgumentError] on compilation errors.
   /// Might also throw other exceptions or errors because of the execution.
