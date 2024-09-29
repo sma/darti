@@ -126,6 +126,12 @@ void main() {
         expect(eval('7 / 2.0'), '3.5');
         expect(eval('7.0 / 2.0'), '3.5');
       });
+      test('~/', () {
+        expect(eval('7 ~/ 2'), '3');
+        expect(eval('7.0 ~/ 2'), '3');
+        expect(eval('7 ~/ 2.0'), '3');
+        expect(eval('7.0 ~/ 2.0'), '3');
+      });
       test('%', () {
         expect(eval('7 % 2'), '1');
         expect(eval('7.0 % 2'), '1.0');
@@ -182,10 +188,18 @@ void main() {
       expect(run('main() { int a = 42; print(a); }'), '42\n');
       expect(run('main() { const a = 42; print(a); }'), '42\n');
     });
-    test('assignment', () {
+    group('assignment', () {
+      test('=', () {
       expect(run('main() { var a = 1; a = a + 2; print(a); }'), '3\n');
+      });
+      test('compound', () {
       expect(run('main() { var a = 1; a += 2; print(a); }'), '3\n');
       expect(run('main() { var a = 1; a -= 2; print(a); }'), '-1\n');
+        expect(run('main() { var a = 2; a *= 2; print(a); }'), '4\n');
+        expect(run('main() { var a = 3; a /= 2; print(a); }'), '1.5\n');
+        expect(run('main() { var a = 3; a ~/= 2; print(a); }'), '1\n');
+        expect(run('main() { var a = 3; a %= 2; print(a); }'), '1\n');
+      });
     });
     test('++', () {
       expect(run('main() { var a = 1; print(a++); print(a); }'), '1\n2\n');

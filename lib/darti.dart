@@ -348,6 +348,14 @@ class Darti {
             value = (evaluate(node.leftHandSide) as num) + (value as num);
           case '-=':
             value = (evaluate(node.leftHandSide) as num) - (value as num);
+          case '*=':
+            value = (evaluate(node.leftHandSide) as num) * (value as num);
+          case '/=':
+            value = (evaluate(node.leftHandSide) as num) / (value as num);
+          case '%=':
+            value = (evaluate(node.leftHandSide) as num) % (value as num);
+          case '~/=':
+            value = (evaluate(node.leftHandSide) as num) ~/ (value as num);
           default:
             throw UnimplementedError('$node'); // coverage:ignore-line
         }

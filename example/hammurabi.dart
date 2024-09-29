@@ -67,21 +67,21 @@ int getIntInput(String prompt) {
 void updateCity(int acresToBuy, int acresToSell, int grainToFeed, int acresToPlant) {
   int landPrice = random.nextInt(10) + 17;
 
-  grain = grain - acresToBuy * landPrice;
-  grain = grain + acresToSell * landPrice;
-  acres = acres + (acresToBuy - acresToSell);
+  grain -= acresToBuy * landPrice;
+  grain += acresToSell * landPrice;
+  acres += acresToBuy - acresToSell;
 
   int peopleStarved = calculateStarvation(grainToFeed);
   int peopleArrived = random.nextInt(5) + 1;
 
-  population = population + (peopleArrived - peopleStarved);
+  population += peopleArrived - peopleStarved;
 
   int harvest = (random.nextInt(5) + 1) * acresToPlant;
-  grain = grain + harvest;
+  grain += harvest;
 
   if (random.nextInt(100) < 15) {
     int grainEatenByRats = (grain * (random.nextInt(3) + 1) ~/ 10);
-    grain = grain - grainEatenByRats;
+    grain -= grainEatenByRats;
     print('Rats ate $grainEatenByRats bushels of grain!');
   }
 }
