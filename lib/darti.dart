@@ -196,6 +196,10 @@ class Darti {
         } finally {
           node.finallyBlock?.let(execute);
         }
+      case EmptyStatement():
+        break;
+      case FunctionDeclarationStatement():
+        execute(node.functionDeclaration);
       default:
         throw UnimplementedError('${node.runtimeType}: $node'); // coverage:ignore-line
     }

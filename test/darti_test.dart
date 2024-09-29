@@ -322,4 +322,12 @@ void main() {
     expect(eval('(a){ return a + 1; }(2)'), '3');
     expect(eval('((a) => a - 1)(2)'), '1');
   });
+
+  test('empty statement', () {
+    expect(run('main() {;}'), '');
+  });
+
+  test('local function definition', () {
+    expect(run('main() { a()=>1; b() { return a() + 1; } print(b()); }'), '2\n');
+  });
 }
