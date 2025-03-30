@@ -2,7 +2,7 @@
 
 Here's an example how to use the `analyzer` package to create an interpreter for a tiny subset of Dart, inspired by the [recent Tart posting](https://www.reddit.com/r/FlutterDev/comments/1fqpizo/looking_for_advice_on_my_sideproject/).
 
-You can use the `analyzer` parse Dart source code and generate an AST and then "just" write an interpreter for that AST. Note that by default, the AST isn't type-checked. I also don't deal with any kind of error handling.
+You can use the `analyzer` package to parse Dart source code and to generate an AST and then "just" write an interpreter for that AST. Note that by default, the AST isn't type-checked. I also don't deal with any kind of error handling.
 
 Start like so:
 
@@ -34,7 +34,7 @@ An empty `execute` function boilerplate looks like this:
     }
 ```
 
-Running this, you'll get an `UnimplementedError: FuncionDeclarationImpl` and have to think about a way to declare (global) functions and call them thereafter. Here's the most simplest way that could possible work:
+Running this, you'll get an `UnimplementedError: FuncionDeclarationImpl` and you have to think about a way to declare (global) functions and call them thereafter. Here's the most simplest way that could possible work:
 
 ```dart
     final bindings = <String, Object?>{};
@@ -53,7 +53,9 @@ Running this, you'll get an `UnimplementedError: FuncionDeclarationImpl` and hav
     }
 ```
 
-I introduce `DartFunction` to provide a bit of type-safety and also to not confuse a runtime Dart function created the the interpreter with a function of the interpreter runtime because both could be bound.
+I introduce `DartFunction` to provide a bit of type-safety and also to not confuse a runtime Dart function created by the interpreter with a function of the interpreter runtime because both could be bound.
+
+I can now implement a `FuncionDeclaration` AST node:
 
 ```dart
     ...
@@ -92,7 +94,7 @@ Add a this to the end of `main`:
     }
 ```
 
-Running this, you'll get an `UnimplementedError: BlockFunctionBodyImpl`, so we have to create another `AstNode` case. Such a `BlockFunctionBody` contains a `Body` and that has a list of statements we need to `execute`:
+Running this, you'll get an `UnimplementedError: BlockFunctionBodyImpl`, so we have to create another `AstNode` case. Such a `BlockFunctionBody` contains a `Block` and that has a list of `statements` we need to `execute`:
 
 ```dart
     ...
@@ -171,7 +173,9 @@ For a more complex example, let's change the example to
     main() { print(sum(3, 4)); } sum(a, b) { return a + b; }
 ```
 
-We're missing the `ReturnStatement` now. You should be able to implement this yourself because everything we need is already in place. Add this to `execute`:
+We're missing the `ReturnStatement` now. You should be able to implement this yourself because everything we need is already in place. 
+
+Add this to `execute`:
 
 ```dart
     ...
@@ -180,7 +184,7 @@ We're missing the `ReturnStatement` now. You should be able to implement this yo
     ...
 ```
 
-I'm using a neat trick to deal with the often occuring pattern "if foo != null then bar(foo!) else ..." in a more functional way by using this extension method:
+NB: I'm using a neat trick to deal with the often occuring pattern `if foo != null then bar(foo!) else ...` in a more functional way by using a `let` extension method:
 
 ```dart
     extension LetExtension<T> on T {
@@ -209,7 +213,9 @@ We need to bind arguments to parameters when calling a function, and for now, I'
 
 And our application should print "7" if run again.
 
-Using `sum(a, b) => a + b;` whould be more idiomatic Dart, though. This is an `ExpressionFunctionBody` and we have to add yet another case to `execute`:
+Using `sum(a, b) => a + b;` whould be more idiomatic Dart, though. 
+
+This is an `ExpressionFunctionBody` and we have to add yet another case to `execute`:
 
 ```dart
     ...
@@ -233,7 +239,7 @@ Running the application shows, that we're lacking a `ConditionalExpression` in `
     ...
 ```
 
-And of course the implementations for `==`, `-` and `*`, which I can add to the `switch` that currently implements addition only:
+And of course the implementations for `==`, `-` and `*`, which I can add to the `switch` in `BinaryExpression` that currently implements addition only:
 
 ```dart
         ...
@@ -301,7 +307,7 @@ I must now use `DartContext.global` in `main`:
     }
 ```
 
-Next, we need to pass the current context to `DartFunction.from` so that a call to a function can create a new context based on the definiting context to bind arguments to parameters. Note how I use a `for` inside the `{}` to define the new bindings and then use the new context to evaluate the function body.
+Next, we need to pass the current context to `DartFunction.from` so that a call to a function can create a new context based on the defining context to bind arguments to parameters. Note how I use a `for` inside the `{}` to define the new bindings and then use the new context to evaluate the function body.
 
 ```dart
     class DartFunction {
@@ -330,9 +336,9 @@ Next, we need to pass the current context to `DartFunction.from` so that a call 
 
 And voila, the interpreter correctly prints "120", so recursive function call (and other function calls, too), work as expected. This starts to become actually useful.
 
-Of course, is it just the tip of the iceberg, as we only support functions and simple expressions. Adding conditionals and loops shouldn't be difficult. A switch with pattern matching on the other hand, would be difficult. You'd also have to think about how to pass `DartFunction` objects to built-in functions because Dart has no easy way to deal with different arities, like for example an `apply` function. And classes, methods and method calls are in a whole different league. Because we cannot create real Dart classes or methods at runtime, we need to simulate them and then distinguish between classes of the runtime environment and user defined classes. And if we want to use this interpreter with Flutter or other AOT compiled environment, we cannot use mirrors to directly call built-in stuff, but need to create our own shadow class hierarchy, similar to how I mapped the `print` function.
+Of course, is it just the tip of the iceberg, as we only support functions and simple expressions. Adding conditionals and loops shouldn't be difficult. A switch with pattern matching, on the other hand, would be difficult. You'd also have to think about how to pass `DartFunction` objects to built-in functions because Dart has no easy way to deal with different arities, like for example an `apply` function. And classes, methods and method calls are in a whole different league. Because we cannot create real Dart classes or methods at runtime, we need to simulate them and then distinguish between classes of the runtime environment and user defined classes. And if we want to use this interpreter with Flutter or other AOT compiled environment, we cannot use mirrors to directly call built-in stuff, but need to create our own shadow class hierarchy, similar to how I mapped the `print` function.
 
-That get's very tedious fast and I'd recommend to write some code that automatically generates this for the standard library, using mirrors. It was always the point in time where I gave up.
+That get's very tedious fast and I'd recommend to write some code that automatically generates this for the standard library, using mirrors. This was always the point in time where I gave up.
 
 Just try this:
 
@@ -340,7 +346,7 @@ Just try this:
     main() { print("abc".substring(1)); }
 ```
 
-This complains about a missing `substring` identifier which means, that I failed to correctly implement `MethodInvocation` because the code doesn't know that `substring` is a method of `String` instead of a global function. It seems, we have take `realTarget` into account.
+The interpreter complains about a missing `substring` identifier which means, that I failed to correctly implement `MethodInvocation` because the code doesn't know that `substring` is a method of `String` instead of a global function. It seems, we have take `realTarget` into account.
 
 ```dart
       ...
@@ -356,4 +362,4 @@ This complains about a missing `substring` identifier which means, that I failed
         ...
 ```
 
-Hopefully, the method name is always a `SimpleIdentifier`. Then, I'll try to call that method with the evaluates arguments using the `mirrors` package. Very convenient. Without that package, you'd have to recreate the whole class hierarchy, as Dart has no way to determine a supertype of a runtime type which would be needed to traverse a type hierarchy to find the correct method implementation.
+Hopefully, the method name is always a `SimpleIdentifier`. Then, I'll try to call that method with the evaluated arguments using the `mirrors` package. Very convenient. Without that package, you'd have to recreate the whole class hierarchy, as Dart has no way to determine a supertype of a runtime type which would be needed to traverse a type hierarchy to find the correct method implementation.

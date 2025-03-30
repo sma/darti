@@ -1,7 +1,7 @@
 An Interpreter For a Tiny Subset of Dart
 ========================================
 
-Run simple Dart code like
+Run simple procedural Dart code like
 
 ```dart
 fac(n) => n == 0 ? 1 : fac(n - 1) * n;
@@ -21,7 +21,7 @@ Run `dart run` to execute `bin/darti.dart` which demonstrates the factorial func
 
 Run `dart test` to run all tests. Alternatively, you can run `make` to run all tests with code coverage. I recommend the [coverage-gutters](https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters) extension for Visual Studio Code to show which lines are covered by tests and aren't yet.
 
-Run `dart run :hammudarti` for a non trivial example of a [old game](https://archive.org/details/Basic_Computer_Games_Microcomputer_Edition_1978_Creative_Computing/page/n92/mode/1up) running via Darti. Note that I simply asked Claude.ai for some code that resembles that game. The implementation is actually wrong.
+Run `dart run :hammudarti` for a non trivial example of a [old game](https://archive.org/details/Basic_Computer_Games_Microcomputer_Edition_1978_Creative_Computing/page/n92/mode/1up) running via Darti. Note that I simply asked [Claude.ai](https://claude.ai/) for some code that resembles that game. The implementation is actually wrong.
 
 ## Subset Supported
 Below is a list of all concrete `AstNode`s of Dart 3.5 with the exception of augmentation that are created by the Dart parser.
